@@ -7,6 +7,7 @@ from time import time
 from typing import Generator
 from typing import List
 from typing import Union
+import requests
 
 from websockets.client import connect, WebSocketClientProtocol
 import certifi
@@ -15,7 +16,7 @@ from BingImageCreator import ImageGenAsync
 
 from .constants import DELIMITER
 from .constants import HEADERS
-from .constants import HEADERS_INIT_CONVER
+from .constants import HEADERS_INIT_CONVER, HEADERS_UPLOAD_IMAGE
 from .conversation import Conversation
 from .conversation_style import CONVERSATION_STYLE_TYPE
 from .request import ChatHubRequest
@@ -57,9 +58,49 @@ class ChatHub:
         self.session = httpx.AsyncClient(
             proxies=proxy,
             timeout=900,
-            headers=HEADERS_INIT_CONVER,
+            headers=HEADERS_INIT_CONVER
         )
 
+    async def upload_image(
+        self,
+        image_url: str) -> dict:
+        
+        post_cookies={}
+        for cookie in self.cookies:
+            post_cookies[cookie["name"]] = cookie["value"]
+        
+        url = "https://www.bing.com/images/kblob"
+        knowledge_request={
+            "imageInfo": {
+                "url": image_url
+            },
+            "knowledgeRequest": {
+                "invokedSkills": [
+                    "ImageById"
+                ],
+                "subscriptionId": "Bing.Chat.Multimodal",
+                "invokedSkillsRequestData": {
+                    "enableFaceBlur": True
+                },
+                "convoData": {
+                    "convoid": self.request.conversation_id,
+                    "convotone": "Precise"
+                }
+            }
+        }
+        
+        data = f'------WebKitFormBoundary3njPohmXErfkAszW\r\nContent-Disposition: form-data; name="knowledgeRequest"\r\n\r\n{json.dumps(knowledge_request)}\r\n------WebKitFormBoundary3njPohmXErfkAszW--\r\n'
+
+        response = requests.post(
+            url,
+            headers=HEADERS_UPLOAD_IMAGE.copy(),
+            cookies=post_cookies,
+            data=data,
+        )
+        
+        return response.json()
+        
+        
     async def get_conversation(
         self,
         conversation_id: str = None,
@@ -95,6 +136,7 @@ class ChatHub:
         webpage_context: Union[str, None] = None,
         search_result: bool = False,
         locale: str = guess_locale(),
+        imageUrl: str = None,
     ) -> Generator[bool, Union[dict, str], None]:
         """ """
 
@@ -108,12 +150,20 @@ class ChatHub:
         ) as wss:
             await self._initial_handshake(wss)
             # Construct a ChatHub request
+            imageDetails = None
+            
+            if imageUrl and not imageUrl.isspace():
+                imageDetails = await self.attach_image(imageUrl)
+                print(imageDetails)
+            
             self.request.update(
                 prompt=prompt,
                 conversation_style=conversation_style,
                 webpage_context=webpage_context,
                 search_result=search_result,
                 locale=locale,
+                imageUrl=imageDetails["imageUrl"] if imageDetails else None,
+                originalImageUrl=imageDetails["originalImageUrl"] if imageDetails else None
             )
             # Send request
             await wss.send(append_identifier(self.request.struct))
@@ -236,6 +286,28 @@ class ChatHub:
         await wss.send(append_identifier({"protocol": "json", "version": 1}))
         await wss.recv()
         await wss.send(append_identifier({"type": 6}))
+        
+    async def attach_image(
+        self,
+        imageUrl: str) -> dict:
+        """
+        Attaches the image to the conversation
+        """
+        response =  await self.upload_image(imageUrl)
+        
+        blobIdKey = "blobId"
+        processedBlobIdKey = "processedBlobId"
+        
+        if blobIdKey not in response:
+            raise Exception(f"Image upload response does not contain expected field {blobIdKey}")
+        
+        if processedBlobIdKey not in response:
+            raise Exception(f"Image upload response does not contain expected field {processedBlobIdKey}")
+        
+        return {
+            "imageUrl": f"https://www.bing.com/images/blob?bcid={response[processedBlobIdKey]}",
+            "originalImageUrl": f"https://www.bing.com/images/blob?bcid={response[blobIdKey]}",
+        }
 
     async def delete_conversation(
         self,

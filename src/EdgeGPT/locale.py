@@ -13,13 +13,11 @@ class LocationHint(Enum):
         "LocationHint": [
             {
                 "country": "United States",
-                "state": "California",
-                "city": "Los Angeles",
-                "timezoneoffset": 8,
-                "countryConfidence": 8,
+                "timezoneoffset": 0,
+                "countryConfidence": 9,
                 "Center": {
-                    "Latitude": 34.0536909,
-                    "Longitude": -118.242766,
+                    "Latitude": 37.9379,
+                    "Longitude": -122.0304,
                 },
                 "RegionType": 2,
                 "SourceType": 1,
