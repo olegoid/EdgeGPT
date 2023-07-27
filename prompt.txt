@@ -1,0 +1,22 @@
+Use the attached image, separatly describe each item and its properties: color, material, fashion item description must have detailed summary of an item
+
+Key style attributes from "fashionItemDescription" add to the "specialFeatures" array.
+
+Example fashion attributes (you can add your own):
+such as v-neck, sleeve, buttons, fabric, pockets, stitches, style, fit, Straight Leg, Straight Taper, Slim, Bootcut, Relaxed, Wide-Leg
+
+Add as many style attributes as possible. Do not describe anything besides clothes.
+
+Return result in a form of a json array. Use this schema:
+
+{
+  "items": [
+    {
+      "itemClass": "",
+      "color": "",
+      "material": "",
+      "specialFeatures": [],
+      "fashionItemDescription": "",
+    }
+  ]
+}
