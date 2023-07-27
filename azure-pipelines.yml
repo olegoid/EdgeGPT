@@ -1,0 +1,24 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+- main
+- dev/olegoid/imageupload
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+    pip install wheel
+    pip install twine
+  displayName: 'Install dependencies'
+
+- script: |
+    python setup.py build
+    python setup.py install
