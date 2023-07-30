@@ -27,5 +27,5 @@ steps:
   displayName: 'Authenticate Twine'
 
 - script: |
-    python -m twine upload -r blue-cardigans/python-private-feed --config-file $(PYPIRC_PATH) dist/*.whl
+    python -m twine upload -r python-private-feed --config-file $(PYPIRC_PATH) dist/*.whl
   displayName: 'Upload'
