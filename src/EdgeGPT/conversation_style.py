@@ -41,13 +41,14 @@ class ConversationStyle(Enum):
         "disable_emoji_spoken_text",
         "responsible_ai_policy_235",
         "enablemm",
-        "h3precise",
-        "objopinion",
-        "dsblhlthcrd",
         "dv3sugg",
         "autosave",
+        "iyxapbing",
+        "iycapbing",
+        "h3precise",
         "clgalileo",
         "gencontentv3",
+        "eredirecturl",
     ]
 
 
