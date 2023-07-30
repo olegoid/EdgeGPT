@@ -11,29 +11,21 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.7'
-    addToPath: true
-    architecture: 'x64'
 
-- script: python -m pip install --upgrade pip setuptools wheel
-  displayName: 'Install tools'
+- script: |
+    pip install twine
+    pip install build
+  displayName: 'Install Twine and Build'
 
-- script: pip install -r src/requirements.txt
-  displayName: 'Install requirements'
-
-- script: |    
-    python src/setup.py bdist_wheel 
-  displayName: 'Artifact creation'
-
-- script: python -m pip install --upgrade twine
-  displayName: 'Install Twine'
+- script: |
+    python -m build -w
+  displayName: 'Run build'
 
 - task: TwineAuthenticate@1
   inputs:
-    pythonUploadServiceConnection: 'private-python-feed'
+    artifactFeed: <PROJECT_NAME/FEED_NAME>
+  displayName: 'Authenticate Twine'
 
 - script: |
-   python -m twine upload --config-file $(PYPIRC_PATH) dist/*.whl
-  displayName: 'Publish to PyPi through Twine'
+    python -m twine upload -r <FEED_NAME> --config-file $(PYPIRC_PATH) dist/*.whl
+  displayName: 'Upload'
