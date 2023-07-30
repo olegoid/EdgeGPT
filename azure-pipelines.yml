@@ -23,9 +23,9 @@ steps:
 
 - task: TwineAuthenticate@1
   inputs:
-    artifactFeed: <PROJECT_NAME/FEED_NAME>
+    artifactFeed: python-private-feed
   displayName: 'Authenticate Twine'
 
 - script: |
-    python -m twine upload -r <FEED_NAME> --config-file $(PYPIRC_PATH) dist/*.whl
+    python -m twine upload -r python-private-feed --config-file $(PYPIRC_PATH) dist/*.whl
   displayName: 'Upload'
